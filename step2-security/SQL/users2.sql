@@ -32,11 +32,20 @@ CREATE TABLE password_history (
 );
 
 CREATE TABLE persistent_logins (
+    `username` VARCHAR(64) NOT NULL,
     `series` VARCHAR(64) PRIMARY KEY,
-    `user_id` BIGINT NOT NULL,
-    `token` VARCHAR(255) NOT NULL,
-    `last_used` DATETIME NOT NULL,
+    `token` VARCHAR(64) NOT NULL,
+    `last_used` TIMESTAMP NOT NULL
+);
+
+CREATE TABLE email_verification (
+    `no` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` BIGINT,
+    `email` VARCHAR(255) NOT NULL,
+    `code` VARCHAR(255) NOT NULL,
+    `expiry` DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users2(no) ON DELETE CASCADE
 );
 
 ALTER TABLE users2 ADD login_fail_count INT DEFAULT 0;
+ALTER TABLE users2 ADD locked BOOLEAN DEFAULT FALSE;

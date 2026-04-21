@@ -46,7 +46,7 @@ public class CustomUserDetails implements UserDetails{
     @Override
     public boolean isAccountNonLocked() {
         // 3회 제한
-        return user.getLoginFailCount() < 3;
+        return !user.isLocked() && user.getLoginFailCount() < 3;
     }
 
     @Override

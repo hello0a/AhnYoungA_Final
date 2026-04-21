@@ -3,10 +3,7 @@ package com.auth.service;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +12,6 @@ import com.auth.exception.LoginFailException;
 import com.auth.mapper.PasswordHistoryMapper;
 import com.auth.mapper.UserMapper;
 
-import jakarta.activation.DataSource;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -52,7 +48,7 @@ public class UserServiceImpl implements UserService{
         user.setPassword(encoded);
         // 회원 정보 저장
         int result = userMapper.insertUser(user);
-        Long userNo = userMapper.findByEmail(user.getEmail()).getNo();
+        Long userNo = user.getNo();
 
         passwordHistoryMapper.insert(userNo,encoded);
 
@@ -126,13 +122,5 @@ public class UserServiceImpl implements UserService{
         }
 
         return name.substring(0,2) + "***" + email.substring(idx);
-    }
-    @Bean
-    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
-
-        JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
-        repo.setDataSource(dataSource);
-
-        return repo;
     }
 }

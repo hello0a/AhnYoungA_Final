@@ -11,4 +11,5 @@ public class User {
     private String name;
     // 2단계
     private int loginFailCount;
+    private boolean locked;
 }

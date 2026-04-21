@@ -16,7 +16,7 @@
         WHERE no = #{no}
     </select>
     <!-- 사용자 정보 등록 -->
-    <insert id="insertUser">
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="no">
         INSERT INTO users2 (id, email, password, name)
         VALUES ( #{id}, #{email}, #{password}, #{name} )
     </insert>

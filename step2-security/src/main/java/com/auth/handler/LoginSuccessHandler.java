@@ -2,7 +2,7 @@ package com.auth.handler;
 
 import java.io.IOException;
 
-import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties.Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +27,9 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         Authentication authentication
     ) throws IOException, ServletException {
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        authService.saveHistory(userDetails.getUser().getNo(), request, true);
+        if (authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+            authService.saveHistory(userDetails.getUser().getNo(), request, true);
+        }
         
         super.onAuthenticationSuccess(request, response, authentication);
     }

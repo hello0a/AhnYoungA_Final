@@ -59,8 +59,10 @@ public class AuthController {
     // 회원가입
     // @RequestPara 개념/사용 이유
     @PostMapping("/signup")
-    public void signup(@RequestBody User user) {
+    public String signup(User user) {
         userService.signup(user);
+
+        return "redirect:/login";
     }
     // 로그인 - Security 처리
     // 로그아웃 - Security 처리

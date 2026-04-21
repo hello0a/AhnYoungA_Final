@@ -5,12 +5,17 @@ import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.auth.domain.User;
+import com.auth.mapper.EmailVerificationMapper;
+import com.auth.mapper.UserMapper;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
     
+    private final UserMapper userMapper;
     private final EmailVerificationMapper mapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -18,7 +23,10 @@ public class EmailService {
         String code = String.valueOf((int)(Math.random() * 900000) + 100000);
         String encoded = passwordEncoder.encode(code);
 
-        mapper.insert(0L, email, encoded, LocalDateTime.now().plusMinutes(5));
+        User user = userMapper.findByEmail(email);
+        Long userNo = (user != null) ? user.getNo() : null;
+
+        mapper.insert(userNo, email, encoded, LocalDateTime.now().plusMinutes(5));
 
         System.out.println("인증코드: " + code);
     }

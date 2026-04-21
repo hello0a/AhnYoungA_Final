@@ -1,14 +1,17 @@
 package com.auth.config;
 
+import javax.sql.DataSource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import com.auth.handler.LoginFailureHandler;
 import com.auth.handler.LoginSuccessHandler;
-import com.auth.security.CustomUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,9 +27,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
+    private final DataSource dataSource;
+
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
+
+        JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+        repo.setDataSource(dataSource);
+
+        return repo;
+    }
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,15 +55,13 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")    // 커스텀 로그인 페이지
                 .loginProcessingUrl("/login")   // 로그인 요청 처리 URL
-                .defaultSuccessUrl("/mypage")   // 성공 시 이동
-                .failureUrl("/login?error=true")   
                 .successHandler(loginSuccessHandler)
                 .failureHandler(loginFailureHandler) // 실패 시 이동
             )
             .rememberMe(remember -> remember
                 .key("remember-me-key")
                 .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
-                .userDetailsService(userDetailsService)
+                .tokenRepository(persistentTokenRepository(dataSource))
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")

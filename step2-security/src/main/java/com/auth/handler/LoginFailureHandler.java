@@ -29,7 +29,7 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler{
         AuthenticationException exception
     ) throws IOException, ServletException {
 
-        String email = request.getParameter("name");
+        String email = request.getParameter("email");
 
         User user = userMapper.findByEmail(email);
 
