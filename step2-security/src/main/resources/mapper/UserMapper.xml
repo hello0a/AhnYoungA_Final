@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.auth.mapper.UserMapper">
+
+    <!-- 이메일로 회원 정보 조회 -->
+    <select id="findByEmail" resultType="User">
+        SELECT *
+        FROM users2
+        WHERE email = #{email}
+    </select>
+    <!-- no로 회원 정보 조회 -->
+    <select id="findByNo" resultType="User">
+        SELECT *
+        FROM users2
+        WHERE no = #{no}
+    </select>
+    <!-- 사용자 정보 등록 -->
+    <insert id="insertUser">
+        INSERT INTO users2 (id, email, password, name)
+        VALUES ( #{id}, #{email}, #{password}, #{name} )
+    </insert>
+    <!-- 비밀번호 변경 -->
+    <update id="updatePassword">
+        UPDATE users2
+        SET password = #{password}
+        WHERE no = #{no}
+    </update>
+
+    <!-- 2단계 -->
+    <!-- 로그인 실패 횟수 -->
+    <update id="increaseFailCount">
+        UPDATE users2
+        SET login_fail_count = login_fail_count + 1
+        WHERE no = #{no}
+    </update>
+    <!-- 로그인 실패 횟수 리셋 -->
+    <update id="resetFailCount">
+        UPDATE users2
+        SET login_fail_count = 0
+        WHERE no = #{no}
+    </update>
+</mapper>

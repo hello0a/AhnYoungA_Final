@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.auth.mapper.EmailVerificationMapper">
+    <!-- 2차 인증 기록 -->
+    <insert id="insert">
+        INSERT INTO email_verification (
+            user_id, email, code, expiry 
+        )
+        VALUES (
+            #{user_id}, #{email}, #{code}, #{expiry}
+        )
+    </insert>
+</mapper>
