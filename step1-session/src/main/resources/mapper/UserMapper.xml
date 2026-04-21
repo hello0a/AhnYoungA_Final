@@ -6,23 +6,23 @@
     <!-- 이메일로 회원 정보 조회 -->
     <select id="findByEmail" resultType="User">
         SELECT *
-        FROM users
+        FROM users1
         WHERE email = #{email}
     </select>
     <!-- no로 회원 정보 조회 -->
     <select id="findByNo" resultType="User">
         SELECT *
-        FROM users
+        FROM users1
         WHERE no = #{no}
     </select>
     <!-- 사용자 정보 등록 -->
     <insert id="insertUser">
-        INSERT INTO users (id, email, password, name)
+        INSERT INTO users1 (id, email, password, name)
         VALUES ( #{id}, #{email}, #{password}, #{name} )
     </insert>
     <!-- 비밀번호 변경 -->
     <update id="updatePassword">
-        UPDATE users
+        UPDATE users1
         SET password = #{password}
         WHERE no = #{no}
     </update>

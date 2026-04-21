@@ -1,6 +1,7 @@
 package com.auth.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.auth.domain.User;
 
@@ -13,7 +14,7 @@ public interface UserMapper {
     // 사용자 정보 등록
     int insertUser(User user);
     // 비밀번호 변경
-    int updatePassword(Long no, String password);
+    int updatePassword(@Param("no") Long no, @Param("password") String password);
 }
 /**
  * @Mapper 개념/사용 이유
