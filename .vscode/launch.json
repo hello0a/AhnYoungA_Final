@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-Step1SessionApplication<step1-session>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.auth.Step1SessionApplication",
+            "projectName": "step1-session",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
