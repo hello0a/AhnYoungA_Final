@@ -8,7 +8,7 @@
             user_id, ip_address, user_agent, success 
         )
         VALUES (
-            #{userId}, #{ip}, #{agent}, #{success}
+            #{userNo}, #{ip}, #{agent}, #{success}
         )
     </insert>
 </mapper>
