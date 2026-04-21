@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>마이페이지</title>
+</head>
+<body>
+
+<h2>마이페이지</h2>
+
+<!-- 회원 정보 -->
+<div>
+    <p>이메일: <span th:text="${user.email}"></span></p>
+    <p>이름: <span th:text="${user.name}"></span></p>
+</div>
+
+<hr>
+
+<!-- 비밀번호 변경 -->
+<h3>비밀번호 변경</h3>
+
+<div>
+    <input type="password" id="password" placeholder="현재 비밀번호"/>
+</div>
+<div>
+    <input type="password" id="newPassword" placeholder="새 비밀번호"/>
+</div>
+
+<button onclick="changePassword()">비밀번호 변경</button>
+
+<p id="msg"></p>
+
+<hr>
+
+<a href="/logout">로그아웃</a>
+
+<script>
+function changePassword() {
+
+    const password = document.getElementById("password").value;
+    const newPassword = document.getElementById("newPassword").value;
+
+    fetch("/api/password", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            password: password,
+            newPassword: newPassword
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const msg = document.getElementById("msg");
+
+        if (data.success) {
+            msg.innerText = "비밀번호 변경 성공";
+            msg.style.color = "green";
+        } else {
+            msg.innerText = data.message || "실패";
+            msg.style.color = "red";
+        }
+    });
+}
+</script>
+
+</body>
+</html>

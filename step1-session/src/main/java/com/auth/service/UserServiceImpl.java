@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.auth.domain.User;
+import com.auth.exception.LoginFailException;
 import com.auth.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -49,21 +50,24 @@ public class UserServiceImpl implements UserService{
         User user = userMapper.findByEmail(email);
 
         if (user == null) {
-            throw new RuntimeException("아이디 또는 비밀번호 오류");
+            // LoginFailException() 개념/변경 이유
+            // throw new RuntimeException("아이디 또는 비밀번호 오류");
+            throw new LoginFailException("아이디 또는 비밀번호 오류");
         }
         // matches 개념/사용 이유
         // : 평문 vs 암호화 비교
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("아이디 또는 비밀번호 오류");
+            // throw new RuntimeException("아이디 또는 비밀번호 오류");
+            throw new LoginFailException("아이디 또는 비밀번호 오류");
         }
 
         return user;
     }
     // 비밀번호 변경
     @Override
-    public int changePassword(String email, String password, String newPassword) {
+    public int changePassword(Long userNo, String password, String newPassword) {
         
-        User user = userMapper.findByEmail(email);
+        User user = userMapper.findByNo(userNo);
 
         if (user == null) {
             throw new RuntimeException("사용자 없음");
@@ -76,7 +80,7 @@ public class UserServiceImpl implements UserService{
         // 새로운 비밀번호 암호화
         String encoded = passwordEncoder.encode(newPassword);
         // 비밀번호 업데이트
-        int result = userMapper.updatePassword(user.getEmail(), encoded);
+        int result = userMapper.updatePassword(user.getNo(), encoded);
 
         return result;
     }
