@@ -33,21 +33,21 @@ public class SecurityConfig {
 
 
     @Bean
-    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
-
+    public PersistentTokenRepository persistentTokenRepository() {
         JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
         repo.setDataSource(dataSource);
-
         return repo;
     }
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/**", "/email/**")  // API와 이메일 인증은 CSRF 제외
+            )
             
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/signup", "/api/auth/**", "/email/**").permitAll()
+                .requestMatchers("/login", "/signup", "/api/auth/**", "/email/**", "/api/password/**").permitAll()
                 // .anyRequest().permitAll()
                 // Step2 핵심 변경
                 .anyRequest().authenticated()
@@ -61,7 +61,7 @@ public class SecurityConfig {
             .rememberMe(remember -> remember
                 .key("remember-me-key")
                 .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
-                .tokenRepository(persistentTokenRepository(dataSource))
+                .tokenRepository(persistentTokenRepository())
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")

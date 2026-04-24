@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>마이페이지</title>
+    <!-- CSRF 토큰 (활성화 시 사용) -->
+    <meta name="_csrf" th:content="${_csrf?.token}" />
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
 <body>
     <h2>마이페이지</h2>
@@ -32,19 +33,24 @@
 
     <script>
     function changePassword() {
-        // CSRF 토큰 가져오기
-        const token = document.querySelector("meta[name='_csrf']").content;
-        const header = document.querySelector("meta[name='_csrf_header']").content;
-        // 입력값 가져오기
         const password = document.getElementById("password").value;
         const newPassword = document.getElementById("newPassword").value;
-        // 비밀번호 변경
+        
+        // CSRF 토큰 준비 (활성화 시)
+        const headers = {
+            "Content-Type": "application/json"
+        };
+        const csrfMeta = document.querySelector("meta[name='_csrf']");
+        if (csrfMeta && csrfMeta.content) {
+            const headerMeta = document.querySelector("meta[name='_csrf_header']");
+            if (headerMeta && headerMeta.content) {
+                headers[headerMeta.content] = csrfMeta.content;
+            }
+        }
+        
         fetch("/api/password", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                [header]: token
-            },
+            headers: headers,
             body: JSON.stringify({
                 password: password,
                 newPassword: newPassword
@@ -66,7 +72,6 @@
             }
         });
 
-        // 버튼 비활성화
         const btn = document.getElementById("btn");
         btn.disabled = true;
         btn.innerText = "처리 중...";
