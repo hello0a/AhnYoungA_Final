@@ -8,7 +8,7 @@
             user_id, email, code, expiry 
         )
         VALUES (
-            #{user_id}, #{email}, #{code}, #{expiry}
+            #{userNo}, #{email}, #{code}, #{expiry}
         )
     </insert>
 </mapper>

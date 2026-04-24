@@ -48,9 +48,9 @@ public class UserServiceImpl implements UserService{
         user.setPassword(encoded);
         // 회원 정보 저장
         int result = userMapper.insertUser(user);
-        Long userNo = user.getNo();
+        Long userId = user.getNo();
 
-        passwordHistoryMapper.insert(userNo,encoded);
+        passwordHistoryMapper.insert(userId,encoded);
 
         return result;
     }
@@ -76,9 +76,9 @@ public class UserServiceImpl implements UserService{
     }
     // 비밀번호 변경
     @Override
-    public int changePassword(Long userNo, String password, String newPassword) {
+    public int changePassword(Long userId, String password, String newPassword) {
         
-        List<String> history = passwordHistoryMapper.findByUser(userNo);
+        List<String> history = passwordHistoryMapper.findByUser(userId);
 
         for (String oldPassword : history) {
             if (passwordEncoder.matches(newPassword, oldPassword)) {
@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService{
             }
         }
 
-        User user = userMapper.findByNo(userNo);
+        User user = userMapper.findByNo(userId);
 
         if (user == null) {
             throw new RuntimeException("사용자 없음");
@@ -99,9 +99,9 @@ public class UserServiceImpl implements UserService{
         // 새로운 비밀번호 암호화
         String encoded = passwordEncoder.encode(newPassword);
         // 비밀번호 업데이트
-        int result = userMapper.updatePassword(userNo, encoded);
+        int result = userMapper.updatePassword(userId, encoded);
         // 비밀번호 기록
-        passwordHistoryMapper.insert(userNo, encoded);
+        passwordHistoryMapper.insert(userId, encoded);
 
         return result;
     }

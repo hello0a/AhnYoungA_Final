@@ -24,9 +24,9 @@ public class EmailService {
         String encoded = passwordEncoder.encode(code);
 
         User user = userMapper.findByEmail(email);
-        Long userNo = (user != null) ? user.getNo() : null;
+        Long userId = (user != null) ? user.getNo() : null;
 
-        mapper.insert(userNo, email, encoded, LocalDateTime.now().plusMinutes(5));
+        mapper.insert(userId, email, encoded, LocalDateTime.now().plusMinutes(5));
 
         System.out.println("인증코드: " + code);
     }

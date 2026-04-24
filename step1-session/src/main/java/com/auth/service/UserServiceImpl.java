@@ -65,9 +65,9 @@ public class UserServiceImpl implements UserService{
     }
     // 비밀번호 변경
     @Override
-    public int changePassword(Long userNo, String password, String newPassword) {
+    public int changePassword(Long userId, String password, String newPassword) {
         
-        User user = userMapper.findByNo(userNo);
+        User user = userMapper.findByNo(userId);
 
         if (user == null) {
             throw new RuntimeException("사용자 없음");

@@ -48,10 +48,10 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public void saveHistory(Long userNo, HttpServletRequest request, boolean success) {
+    public void saveHistory(Long userId, HttpServletRequest request, boolean success) {
         
         loginHistoryMapper.insert(
-            userNo,
+            userId,
             request.getRemoteAddr(),
             request.getHeader("User-Agent"),
             success
