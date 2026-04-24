@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.auth.domain.EmailVerification;
 import com.auth.domain.User;
 import com.auth.mapper.EmailVerificationMapper;
 import com.auth.mapper.UserMapper;
@@ -20,19 +21,33 @@ public class EmailService {
     private final PasswordEncoder passwordEncoder;
 
     public void sendCode(String email) {
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            return;
+        }
+
         String code = String.valueOf((int)(Math.random() * 900000) + 100000);
         String encoded = passwordEncoder.encode(code);
 
-        User user = userMapper.findByEmail(email);
-        Long userId = (user != null) ? user.getNo() : null;
-
-        mapper.insert(userId, email, encoded, LocalDateTime.now().plusMinutes(5));
+        mapper.insert(user.getNo(), email, encoded, LocalDateTime.now().plusMinutes(5));
 
         System.out.println("인증코드: " + code);
     }
 
-    public boolean verify(String input, String stored) {
-        return passwordEncoder.matches(input, stored);
+    public boolean verifyCode(String email, String input) {
+        EmailVerification verification = mapper.findByEmail(email);
+        if (verification == null || verification.getExpiry() == null || verification.getExpiry().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        boolean valid = passwordEncoder.matches(input, verification.getCode());
+        if (valid) {
+            mapper.deleteByEmail(email);
+        }
+        return valid;
     }
 
+    public void deleteVerification(String email) {
+        mapper.deleteByEmail(email);
+    }
 }

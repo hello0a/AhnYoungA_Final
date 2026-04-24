@@ -1,68 +1,77 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>마이페이지</title>
 </head>
 <body>
+    <h2>마이페이지</h2>
+    <!-- 회원 정보 -->
+    <div>
+        <p>이메일: <span th:text="${user.email}"></span></p>
+        <p>이름: <span th:text="${user.name}"></span></p>
+    </div>
 
-<h2>마이페이지</h2>
+    <hr>
 
-<!-- 회원 정보 -->
-<div>
-    <p>이메일: <span th:text="${user.email}"></span></p>
-    <p>이름: <span th:text="${user.name}"></span></p>
-</div>
+    <!-- 비밀번호 변경 -->
+    <h3>비밀번호 변경</h3>
+    <div>
+        <input type="password" id="password" placeholder="현재 비밀번호"/>
+    </div>
+    <div>
+        <input type="password" id="newPassword" placeholder="새 비밀번호"/>
+    </div>
+    <button onclick="changePassword()" id="btn">비밀번호 변경</button>
+    <p id="msg"></p>
 
-<hr>
+    <hr>
 
-<!-- 비밀번호 변경 -->
-<h3>비밀번호 변경</h3>
+    <a href="/logout">로그아웃</a>
 
-<div>
-    <input type="password" id="password" placeholder="현재 비밀번호"/>
-</div>
-<div>
-    <input type="password" id="newPassword" placeholder="새 비밀번호"/>
-</div>
-
-<button onclick="changePassword()">비밀번호 변경</button>
-
-<p id="msg"></p>
-
-<hr>
-
-<a href="/logout">로그아웃</a>
-
-<script>
-function changePassword() {
-
-    const password = document.getElementById("password").value;
-    const newPassword = document.getElementById("newPassword").value;
-
-    fetch("/api/password", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            password: password,
-            newPassword: newPassword
+    <script>
+    function changePassword() {
+        // CSRF 토큰 가져오기
+        const token = document.querySelector("meta[name='_csrf']").content;
+        const header = document.querySelector("meta[name='_csrf_header']").content;
+        // 입력값 가져오기
+        const password = document.getElementById("password").value;
+        const newPassword = document.getElementById("newPassword").value;
+        // 비밀번호 변경
+        fetch("/api/password", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                [header]: token
+            },
+            body: JSON.stringify({
+                password: password,
+                newPassword: newPassword
+            })
         })
-    })
-    .then(res => res.json())
-    .then(data => {
-        const msg = document.getElementById("msg");
+        .then(res => {
+            if (!res.ok) throw new Error("서버 오류");
+            return res.json();
+        })
+        .then(data => {
+            const msg = document.getElementById("msg");
 
-        if (data.success) {
-            msg.innerText = "비밀번호 변경 성공";
-            msg.style.color = "green";
-        } else {
-            msg.innerText = data.message || "실패";
-            msg.style.color = "red";
-        }
-    });
-}
-</script>
+            if (data.success) {
+                msg.innerText = "비밀번호 변경 성공";
+                msg.style.color = "green";
+            } else {
+                msg.innerText = data.message || "실패";
+                msg.style.color = "red";
+            }
+        });
+
+        // 버튼 비활성화
+        const btn = document.getElementById("btn");
+        btn.disabled = true;
+        btn.innerText = "처리 중...";
+    }
+    </script>
 
 </body>
 </html>

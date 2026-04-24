@@ -22,6 +22,7 @@ public class UserServiceImpl implements UserService{
     private final PasswordEncoder passwordEncoder;
     private final PasswordPolicyService policyService;
     private final PasswordHistoryMapper passwordHistoryMapper;
+    private final EmailService emailService;
 
     /**
      * @Transactional 개념/사용 이유
@@ -48,9 +49,16 @@ public class UserServiceImpl implements UserService{
         user.setPassword(encoded);
         // 회원 정보 저장
         int result = userMapper.insertUser(user);
-        Long userId = user.getNo();
+        Long userNo = user.getNo();
+        if (userNo == null) {
+            User inserted = userMapper.findByEmail(user.getEmail());
+            if (inserted == null || inserted.getNo() == null) {
+                throw new RuntimeException("회원 등록 실패");
+            }
+            userNo = inserted.getNo();
+        }
 
-        passwordHistoryMapper.insert(userId,encoded);
+        passwordHistoryMapper.insert(userNo, encoded);
 
         return result;
     }
@@ -65,6 +73,12 @@ public class UserServiceImpl implements UserService{
             // throw new RuntimeException("아이디 또는 비밀번호 오류");
             throw new LoginFailException("아이디 또는 비밀번호 오류");
         }
+
+        // 계정 잠금 확인
+        if (user.isLocked()) {
+            throw new RuntimeException("계정이 잠금 상태입니다.");
+        }
+
         // matches 개념/사용 이유
         // : 평문 vs 암호화 비교
         if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -76,9 +90,9 @@ public class UserServiceImpl implements UserService{
     }
     // 비밀번호 변경
     @Override
-    public int changePassword(Long userId, String password, String newPassword) {
+    public int changePassword(Long userNo, String password, String newPassword) {
         
-        List<String> history = passwordHistoryMapper.findByUser(userId);
+        List<String> history = passwordHistoryMapper.findByUser(userNo);
 
         for (String oldPassword : history) {
             if (passwordEncoder.matches(newPassword, oldPassword)) {
@@ -86,7 +100,7 @@ public class UserServiceImpl implements UserService{
             }
         }
 
-        User user = userMapper.findByNo(userId);
+        User user = userMapper.findByNo(userNo);
 
         if (user == null) {
             throw new RuntimeException("사용자 없음");
@@ -96,12 +110,42 @@ public class UserServiceImpl implements UserService{
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("아이디 또는 비밀번호 오류");
         }
+        // 새로운 비밀번호 정책 검증
+        policyService.validate(newPassword);
         // 새로운 비밀번호 암호화
         String encoded = passwordEncoder.encode(newPassword);
         // 비밀번호 업데이트
-        int result = userMapper.updatePassword(userId, encoded);
+        int result = userMapper.updatePassword(userNo, encoded);
         // 비밀번호 기록
-        passwordHistoryMapper.insert(userId, encoded);
+        passwordHistoryMapper.insert(userNo, encoded);
+
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public int resetPasswordByEmail(String email, String code, String newPassword) {
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("사용자 없음");
+        }
+
+        if (!emailService.verifyCode(email, code)) {
+            throw new RuntimeException("인증코드 오류 또는 만료");
+        }
+
+        policyService.validate(newPassword);
+
+        List<String> history = passwordHistoryMapper.findByUser(user.getNo());
+        for (String oldPassword : history) {
+            if (passwordEncoder.matches(newPassword, oldPassword)) {
+                throw new RuntimeException("이전 비밀번호 사용 불가");
+            }
+        }
+
+        String encoded = passwordEncoder.encode(newPassword);
+        int result = userMapper.updatePassword(user.getNo(), encoded);
+        passwordHistoryMapper.insert(user.getNo(), encoded);
 
         return result;
     }

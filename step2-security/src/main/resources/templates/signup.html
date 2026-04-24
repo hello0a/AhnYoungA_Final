@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>회원가입</title>
 </head>
 <body>
     <h2>회원가입</h2>
     <form method="post" action="/signup">
-        <input type="text" name="email" placeholder="이메일" required/>
+        <!-- CSRF (Spring Security 필수) -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <input type="email" name="email" placeholder="이메일" required/>
         <input type="password" name="password" placeholder="비밀번호" required/>
         <input type="text" name="name" placeholder="이름" required/>
         <button type="submit">가입</button>
     </form>
+    <a href="/login">로그인</a>
 </body>
 </html>

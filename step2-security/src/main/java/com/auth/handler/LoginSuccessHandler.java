@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import com.auth.mapper.UserMapper;
 import com.auth.security.CustomUserDetails;
 import com.auth.service.AuthService;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler{
     
     private final AuthService authService;
+    private final UserMapper userMapper;
 
     @Override
     public void onAuthenticationSuccess (
@@ -28,6 +30,7 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     ) throws IOException, ServletException {
 
         if (authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+            userMapper.resetFailCount(userDetails.getUser().getNo());
             authService.saveHistory(userDetails.getUser().getNo(), request, true);
         }
         

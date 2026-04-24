@@ -5,10 +5,10 @@
     <!-- 로그인 기록 -->
     <insert id="insert">
         INSERT INTO login_history (
-            user_id, ip_address, user_agent, success 
+            user_no, ip_address, user_agent, success 
         )
         VALUES (
-            #{userId}, #{ip}, #{agent}, #{success}
+            #{userNo}, #{ip}, #{agent}, #{success}
         )
     </insert>
 </mapper>

@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class PasswordHistory {
     private Long no;
-    private Long userId;
+    private Long userNo;
     private String password;
     private LocalDateTime createdAt;
 }

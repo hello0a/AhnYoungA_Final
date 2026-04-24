@@ -5,7 +5,7 @@
     <!-- 2차 인증 기록 -->
     <insert id="insert">
         INSERT INTO email_verification (
-            user_id, email, code, expiry 
+            user_no, email, code, expiry 
         )
         VALUES (
             #{userNo}, #{email}, #{code}, #{expiry}

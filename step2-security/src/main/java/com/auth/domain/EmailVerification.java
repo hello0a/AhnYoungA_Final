@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class EmailVerification {
     private Long no;
-    private Long userId;
+    private Long userNo;
     private String email;
     private String code;
     private LocalDateTime expiry;

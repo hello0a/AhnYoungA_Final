@@ -8,5 +8,7 @@ public interface UserService {
     // 로그인
     User login(String email, String password);
     // 비밀번호 변경
-    int changePassword(Long userId, String password, String newPassword);
+    int changePassword(Long userNo, String password, String newPassword);
+    // 이메일 인증으로 비밀번호 재설정
+    int resetPasswordByEmail(String email, String code, String newPassword);
 }

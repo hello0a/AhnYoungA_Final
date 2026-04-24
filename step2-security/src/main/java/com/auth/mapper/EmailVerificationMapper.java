@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.auth.domain.EmailVerification;
+
 @Mapper
 public interface EmailVerificationMapper {
     int insert(
@@ -13,4 +15,7 @@ public interface EmailVerificationMapper {
         @Param("code") String code,
         @Param("expiry") LocalDateTime expiry
     );
+
+    EmailVerification findByEmail(String email);
+    int deleteByEmail(String email);
 }

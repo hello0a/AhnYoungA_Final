@@ -89,10 +89,43 @@ public class AuthController {
             return Map.of("success", false, "message", e.getMessage());
         }
     }
-    // 이메일 2차 인증
+    // 이메일 2차 인증 코드 발송
     @PostMapping("/email/send")
-    public void send(@RequestBody Map<String, String> req) {
-        emailService.sendCode(req.get("email"));
+    @ResponseBody
+    public Map<String, Object> send(@RequestBody Map<String, String> req) {
+        try {
+            emailService.sendCode(req.get("email"));
+            return Map.of("success", true);
+        } catch (Exception e) {
+            return Map.of("success", false, "message", e.getMessage());
+        }
+    }
+
+    // 이메일 인증 코드 확인
+    @PostMapping("/email/verify")
+    @ResponseBody
+    public Map<String, Object> verifyCode(@RequestBody Map<String, String> req) {
+        boolean valid = emailService.verifyCode(req.get("email"), req.get("code"));
+        if (valid) {
+            return Map.of("success", true);
+        }
+        return Map.of("success", false, "message", "인증코드가 유효하지 않거나 만료되었습니다.");
+    }
+
+    // 비밀번호 재설정
+    @PostMapping("/api/password/reset")
+    @ResponseBody
+    public Map<String, Object> resetPassword(@RequestBody Map<String, String> req) {
+        try {
+            userService.resetPasswordByEmail(
+                req.get("email"),
+                req.get("code"),
+                req.get("newPassword")
+            );
+            return Map.of("success", true);
+        } catch (Exception e) {
+            return Map.of("success", false, "message", e.getMessage());
+        }
     }
 }
 /**

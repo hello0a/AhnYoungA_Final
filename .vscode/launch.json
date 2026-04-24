@@ -9,6 +9,16 @@
             "projectName": "step1-session",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-Step2SecurityApplication<step2-security>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.auth.Step2SecurityApplication",
+            "projectName": "step2-security",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
