@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>마이페이지</title>
     <!-- CSRF 토큰 (활성화 시 사용) -->
     <meta name="_csrf" th:content="${_csrf?.token}" />
     <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
+
 <body>
     <h2>마이페이지</h2>
     <!-- 회원 정보 -->
@@ -19,10 +21,10 @@
     <!-- 비밀번호 변경 -->
     <h3>비밀번호 변경</h3>
     <div>
-        <input type="password" id="password" placeholder="현재 비밀번호"/>
+        <input type="password" id="password" placeholder="현재 비밀번호" />
     </div>
     <div>
-        <input type="password" id="newPassword" placeholder="새 비밀번호"/>
+        <input type="password" id="newPassword" placeholder="새 비밀번호" />
     </div>
     <button onclick="changePassword()" id="btn">비밀번호 변경</button>
     <p id="msg"></p>
@@ -32,51 +34,63 @@
     <a href="/logout">로그아웃</a>
 
     <script>
-    function changePassword() {
-        const password = document.getElementById("password").value;
-        const newPassword = document.getElementById("newPassword").value;
-        
-        // CSRF 토큰 준비 (활성화 시)
-        const headers = {
-            "Content-Type": "application/json"
-        };
-        const csrfMeta = document.querySelector("meta[name='_csrf']");
-        if (csrfMeta && csrfMeta.content) {
-            const headerMeta = document.querySelector("meta[name='_csrf_header']");
-            if (headerMeta && headerMeta.content) {
-                headers[headerMeta.content] = csrfMeta.content;
+        function changePassword() {
+            const password = document.getElementById("password").value;
+            const newPassword = document.getElementById("newPassword").value;
+
+            // CSRF 토큰 준비 (활성화 시)
+            const headers = {
+                "Content-Type": "application/json"
+            };
+            const csrfMeta = document.querySelector("meta[name='_csrf']");
+            if (csrfMeta && csrfMeta.content) {
+                const headerMeta = document.querySelector("meta[name='_csrf_header']");
+                if (headerMeta && headerMeta.content) {
+                    headers[headerMeta.content] = csrfMeta.content;
+                }
             }
-        }
-        
-        fetch("/api/password", {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify({
-                password: password,
-                newPassword: newPassword
+
+            fetch("/api/password", {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                    password: password,
+                    newPassword: newPassword
+                })
             })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("서버 오류");
-            return res.json();
-        })
-        .then(data => {
-            const msg = document.getElementById("msg");
+                .then(res => {
+                    if (!res.ok) throw new Error("서버 오류");
+                    return res.json();
+                })
+                .then(data => {
+                    const msg = document.getElementById("msg");
 
-            if (data.success) {
-                msg.innerText = "비밀번호 변경 성공";
-                msg.style.color = "green";
-            } else {
-                msg.innerText = data.message || "실패";
-                msg.style.color = "red";
-            }
-        });
+                    if (data.success) {
+                        msg.innerText = "비밀번호 변경 성공";
+                        msg.style.color = "green";
 
-        const btn = document.getElementById("btn");
-        btn.disabled = true;
-        btn.innerText = "처리 중...";
-    }
+                        document.getElementById("password").value = "";
+                        document.getElementById("newPassword").value = "";
+
+                        btn.disabled = true;
+                        btn.innerText = "변경 완료";
+                    } else {
+                        msg.innerText = data.message || "실패";
+                        msg.style.color = "red";
+                    }
+                })
+                .catch(() => {
+                    msg.innerText = "요청 실패";
+                    msg.style.color = "red";
+                })
+                .finally(() => {
+                    const btn = document.getElementById("btn");
+                    btn.disabled = false;
+                    btn.innerText = "비밀번호 변경";
+                });
+        }
     </script>
 
 </body>
+
 </html>

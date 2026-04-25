@@ -4,13 +4,16 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.auth.domain.User;
 
 // 클래스 정의/구현 이유
-public class CustomUserDetails implements UserDetails{
-    
+public class CustomUserDetails implements UserDetails {
+
+    private static final long serialVersionUID = 1L;
+
     private final User user;
 
     public CustomUserDetails(User user) {
@@ -23,7 +26,7 @@ public class CustomUserDetails implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(() -> "ROLE_USER");
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
@@ -31,7 +34,7 @@ public class CustomUserDetails implements UserDetails{
         // DB 암호화된 비밀번호
         return user.getPassword(); 
     }
-
+    
     @Override
     public String getUsername() {
         // 로그인 ID

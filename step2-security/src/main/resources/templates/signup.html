@@ -1,21 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>회원가입</title>
     <!-- CSRF 토큰 (활성화 시 사용) -->
     <meta name="_csrf" th:content="${_csrf?.token}" />
     <meta name="_csrf_header" th:content="${_csrf?.headerName}" />
 </head>
+
 <body>
     <h2>회원가입</h2>
     <form method="post" action="/signup">
         <!-- CSRF 토큰 (활성화 시 자동 추가) -->
         <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}" />
-        <input type="email" name="email" placeholder="이메일" required/>
-        <input type="password" name="password" placeholder="비밀번호" required/>
-        <input type="text" name="name" placeholder="이름" required/>
+
+        <input type="email" name="email" placeholder="이메일" th:value="${param.email}" required />
+        <input type="password" name="password" placeholder="비밀번호" required />
+        <input type="text" name="name" placeholder="이름" th:value="${param.name}" required />
+
         <button type="submit">가입</button>
     </form>
+    <div th:if="${success}" style="color:green">
+        회원가입 완료
+    </div>
+    <div th:if="${error}" style="color:red">
+        <p th:text="${error}"></p>
+    </div>
     <a href="/login">로그인</a>
 </body>
+
 </html>
