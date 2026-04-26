@@ -27,33 +27,41 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     @Override
     public void onAuthenticationFailure(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        AuthenticationException exception
-    ) throws IOException, ServletException {
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException exception) throws IOException, ServletException {
 
         log.info("[LoginFailure] 로그인 실패: {}", exception.getClass().getSimpleName());
 
         String email = request.getParameter("email");
         User user = userMapper.findByEmail(email);
 
-        if (user != null) {
-            // 계정이 잠긴 경우 실패 횟수 증가 X
-            if (!(exception instanceof LockedException)) {
-                userMapper.increaseFailCount(user.getNo());
-            }
-            authService.saveHistory(user.getNo(), request, false);
-        } else {
+        if (user == null) {
             authService.saveHistory(null, request, false);
+            response.sendRedirect("/login?error");
+            return;
         }
-
-        // 계정 잠금 여부에 따라 다른 파라미터로 리다이렉트
+        // 계정이 잠긴 경우 실패 횟수 증가 X
         if (exception instanceof LockedException) {
             log.warn("[LoginFailure] 계정 잠금 상태 → redirect:/login?locked");
             response.sendRedirect("/login?locked");
-        } else {
-            log.warn("[LoginFailure] 인증 실패 → redirect:/login?error");
-            response.sendRedirect("/login?error");
+            return;
         }
+        // 실패 횟수 증가
+        userMapper.increaseFailCount(user.getNo());
+        authService.saveHistory(user.getNo(), request, false);
+        // DB에서 다시 조회 (정확한 값)
+        User updatedUser = userMapper.findByEmail(email);
+        int failCount = updatedUser.getLoginFailCount();
+
+        log.warn("[LoginFailure] 실패 횟수: {}", failCount);
+        // 3회 이상 잠금
+        if (failCount >= 3) {
+            response.sendRedirect("/login?locked");
+            return;
+        }
+        // 실패 횟수 전달
+        response.sendRedirect("/login?fail=" + failCount);
+        return;
     }
 }

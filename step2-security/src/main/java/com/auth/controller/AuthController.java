@@ -128,11 +128,12 @@ public class AuthController {
     @PostMapping("/email/verify")
     @ResponseBody
     public Map<String, Object> verifyCode(@RequestBody Map<String, String> req) {
-        boolean valid = emailService.verifyCode(req.get("email"), req.get("code"));
-        if (valid) {
+        try {
+            boolean valid = emailService.verifyCode(req.get("email"), req.get("code"));
             return Map.of("success", true);
+        } catch (Exception e) {
+            return Map.of("success", false, "message", e.getMessage());
         }
-        return Map.of("success", false, "message", "인증코드가 유효하지 않거나 만료되었습니다.");
     }
 
     // 비밀번호 재설정

@@ -16,8 +16,8 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
-    
+public class UserServiceImpl implements UserService {
+
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final PasswordPolicyService policyService;
@@ -26,13 +26,13 @@ public class UserServiceImpl implements UserService{
 
     /**
      * @Transactional 개념/사용 이유
-     * : 트랜잭션 관리 (실패 시 롤백)
+     *                : 트랜잭션 관리 (실패 시 롤백)
      */
     // 회원가입
     @Override
     @Transactional
     public int signup(User user) {
-        
+
         // 유효성 검사
         validateEmail(user.getEmail());
         policyService.validate(user.getPassword());
@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService{
 
         return result;
     }
+
     // 로그인
     @Override
     public User login(String email, String password) {
@@ -88,10 +89,11 @@ public class UserServiceImpl implements UserService{
 
         return user;
     }
+
     // 비밀번호 변경
     @Override
     public int changePassword(Long userNo, String password, String newPassword) {
-        
+
         List<String> history = passwordHistoryMapper.findByUser(userNo);
 
         for (String oldPassword : history) {
@@ -135,6 +137,7 @@ public class UserServiceImpl implements UserService{
         }
 
         policyService.validate(newPassword);
+        emailService.deleteVerification(email);
 
         List<String> history = passwordHistoryMapper.findByUser(user.getNo());
         for (String oldPassword : history) {
@@ -145,6 +148,7 @@ public class UserServiceImpl implements UserService{
 
         String encoded = passwordEncoder.encode(newPassword);
         int result = userMapper.updatePassword(user.getNo(), encoded);
+
         passwordHistoryMapper.insert(user.getNo(), encoded);
 
         return result;
@@ -156,6 +160,7 @@ public class UserServiceImpl implements UserService{
             throw new RuntimeException("이메일 형식 오류");
         }
     }
+
     // 아이디 찾기 (마스킹)
     public String maskEmail(String email) {
         int idx = email.indexOf("@");
@@ -165,6 +170,6 @@ public class UserServiceImpl implements UserService{
             return email;
         }
 
-        return name.substring(0,2) + "***" + email.substring(idx);
+        return name.substring(0, 2) + "***" + email.substring(idx);
     }
 }

@@ -28,47 +28,48 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final LoginSuccessHandler loginSuccessHandler;
-    private final LoginFailureHandler loginFailureHandler;
-    private final DataSource dataSource;
+        private final LoginSuccessHandler loginSuccessHandler;
+        private final LoginFailureHandler loginFailureHandler;
+        private final DataSource dataSource;
 
-    @Bean
-    public PersistentTokenRepository persistentTokenRepository() {
-        JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
-        repo.setDataSource(dataSource);
-        return repo;
-    }
+        @Bean
+        public PersistentTokenRepository persistentTokenRepository() {
+                JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+                repo.setDataSource(dataSource);
+                return repo;
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-            PersistentTokenRepository tokenRepository) throws Exception {
-        http
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**", "/email/**") // API와 이메일 인증은 CSRF 제외
-                )
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http,
+                        PersistentTokenRepository tokenRepository) throws Exception {
+                http
+                                .csrf(csrf -> csrf
+                                                .ignoringRequestMatchers("/api/**", "/email/**") // API와 이메일 인증은 CSRF 제외
+                                )
 
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/signup", "/password-reset", "/api/auth/**", "/email/**", "/api/password/**")
-                        .permitAll()
-                        // .anyRequest().permitAll()
-                        // Step2 핵심 변경
-                        .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login") // 커스텀 로그인 페이지
-                        .loginProcessingUrl("/login") // 로그인 요청 처리 URL
-                        .usernameParameter("email")
-                        .passwordParameter("password")
-                        .successHandler(loginSuccessHandler)
-                        .failureHandler(loginFailureHandler) // 실패 시 이동
-                )
-                .rememberMe(remember -> remember
-                        .key("remember-me-key")
-                        .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
-                        .tokenRepository(tokenRepository))
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login"));
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/login", "/signup", "/password-reset", "/api/auth/**",
+                                                                "/email/**", "/api/password/**")
+                                                .permitAll()
+                                                // .anyRequest().permitAll()
+                                                // Step2 핵심 변경
+                                                .anyRequest().authenticated())
+                                .formLogin(form -> form
+                                                .loginPage("/login") // 커스텀 로그인 페이지
+                                                .loginProcessingUrl("/login") // 로그인 요청 처리 URL
+                                                .usernameParameter("email")
+                                                .passwordParameter("password")
+                                                .successHandler(loginSuccessHandler)
+                                                .failureHandler(loginFailureHandler) // 실패 시 이동
+                                )
+                                .rememberMe(remember -> remember
+                                                .key("remember-me-key")
+                                                .tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
+                                                .tokenRepository(tokenRepository))
+                                .logout(logout -> logout
+                                                .logoutUrl("/logout")
+                                                .logoutSuccessUrl("/login"));
 
-        return http.build();
-    }
+                return http.build();
+        }
 }

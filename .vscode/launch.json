@@ -6,9 +6,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "mainClass": "com.auth.Step1SessionApplication",
-            "projectName": "step1-session",
-            "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "projectName": "step1-session"
         },
         {
             "type": "java",
@@ -18,7 +16,7 @@
             "mainClass": "com.auth.Step2SecurityApplication",
             "projectName": "step2-security",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/step2-security/.env"
         }
     ]
 }

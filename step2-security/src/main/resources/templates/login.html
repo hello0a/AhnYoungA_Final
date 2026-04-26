@@ -12,6 +12,18 @@
         <p th:text="${error}"></p>
     </div>
 
+    <div th:if="${param.fail}">
+        <p style="color: orange;">
+            비밀번호 오류 (<span th:text="${param.fail}"></span>회)
+        </p>
+    </div>
+
+    <div th:if="${param.locked}">
+        <p style="color: red;">
+            계정이 잠겼습니다. 관리자에게 문의하세요.
+        </p>
+    </div>
+
     <form method="post" action="/login">
         <!-- CSRF (Spring Security 필수) -->
         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />

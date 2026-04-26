@@ -31,12 +31,21 @@
 
     <hr>
 
-    <a href="/logout">로그아웃</a>
+    <form method="post" action="/logout">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit">로그아웃</button>
+    </form>
 
     <script>
         function changePassword() {
             const password = document.getElementById("password").value;
             const newPassword = document.getElementById("newPassword").value;
+
+            const btn = document.getElementById("btn");
+            const msg = document.getElementById("msg");
+
+            btn.disabled = true;
+            btn.innerText = "처리 중...";
 
             // CSRF 토큰 준비 (활성화 시)
             const headers = {
@@ -48,6 +57,30 @@
                 if (headerMeta && headerMeta.content) {
                     headers[headerMeta.content] = csrfMeta.content;
                 }
+            }
+            // 빈값 유효성 검사
+            if (!password || !newPassword) {
+                msg.innerText = "모든 값을 입력하세요";
+                msg.style.color = "red";
+                btn.disabled = false;
+                btn.innerText = "비밀번호 변경";
+                return;
+            }
+            // 동일 비밀번호 유효성 검사
+            if (password === newPassword) {
+                msg.innerText = "기존 비밀번호와 동일합니다";
+                msg.style.color = "red";
+                btn.disabled = false;
+                btn.innerText = "비밀번호 변경";
+                return;
+            }
+            // 짧은 비밀번호 유효성 검사
+            if (newPassword.length < 8) {
+                msg.innerText = "비밀번호는 8자 이상";
+                msg.style.color = "red";
+                btn.disabled = false;
+                btn.innerText = "비밀번호 변경";
+                return;
             }
 
             fetch("/api/password", {
@@ -63,16 +96,15 @@
                     return res.json();
                 })
                 .then(data => {
-                    const msg = document.getElementById("msg");
-
                     if (data.success) {
+                        success = true;
+
                         msg.innerText = "비밀번호 변경 성공";
                         msg.style.color = "green";
 
                         document.getElementById("password").value = "";
                         document.getElementById("newPassword").value = "";
 
-                        btn.disabled = true;
                         btn.innerText = "변경 완료";
                     } else {
                         msg.innerText = data.message || "실패";
@@ -84,9 +116,11 @@
                     msg.style.color = "red";
                 })
                 .finally(() => {
-                    const btn = document.getElementById("btn");
                     btn.disabled = false;
-                    btn.innerText = "비밀번호 변경";
+
+                    if (!success) {
+                        btn.innerText = "비밀번호 변경";
+                    }
                 });
         }
     </script>

@@ -51,3 +51,8 @@ CREATE TABLE email_verification (
 ALTER TABLE users2 ADD login_fail_count INT DEFAULT 0;
 
 ALTER TABLE users2 ADD locked BOOLEAN DEFAULT FALSE;
+-- 인증코드 생성
+ALTER TABLE email_verification
+ADD created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
+-- 인증코드 실패 횟수
+ALTER TABLE email_verification ADD fail_count INT DEFAULT 0;

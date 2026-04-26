@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 이메일 인증코드 ###
+.env

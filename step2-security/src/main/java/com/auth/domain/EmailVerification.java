@@ -10,5 +10,7 @@ public class EmailVerification {
     private Long userNo;
     private String email;
     private String code;
+    private int failCount;
     private LocalDateTime expiry;
+    private LocalDateTime createdAt;
 }

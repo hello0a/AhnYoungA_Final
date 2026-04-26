@@ -1,11 +1,8 @@
 package com.auth.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.auth.domain.User;
 import com.auth.mapper.LoginHistoryMapper;
-import com.auth.mapper.UserMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,20 +10,19 @@ import lombok.RequiredArgsConstructor;
 // 클래스 정의/구현 이유
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
 
     private final LoginHistoryMapper loginHistoryMapper;
 
     @Override
     public void saveHistory(Long userNo, HttpServletRequest request, boolean success) {
-        
+
         loginHistoryMapper.insert(
-            userNo,
-            request.getRemoteAddr(),
-            request.getHeader("User-Agent"),
-            success
-        );
+                userNo,
+                request.getRemoteAddr(),
+                request.getHeader("User-Agent"),
+                success);
 
     }
-    
+
 }
