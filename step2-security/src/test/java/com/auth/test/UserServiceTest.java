@@ -1,5 +1,7 @@
 package com.auth.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,7 +37,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setup() {
-        email = "test" + System.currentTimeMillis() + "@test.com";
+        email = "test" + java.util.UUID.randomUUID() + "@test.com";
 
         User user = new User();
         user.setEmail(email);
@@ -49,7 +51,8 @@ class UserServiceTest {
     void login_success() {
         User user = userService.login(email, "Abcd1234!");
 
-        assertNotNull(user);
+        assertEquals(email, user.getEmail());
+        assertNotNull(user.getNo());
     }
 
     @Test
@@ -68,7 +71,7 @@ class UserServiceTest {
 
     @Test
     void signup_success() {
-        String newEmail = "new" + System.currentTimeMillis() + "@test.com";
+        String newEmail = "new" + java.util.UUID.randomUUID() + "@test.com";
 
         User user = new User();
         user.setEmail(newEmail);
@@ -77,9 +80,18 @@ class UserServiceTest {
 
         userService.signup(user);
 
-        // 🔥 진짜 검증
         User saved = userService.login(newEmail, "Abcd1234!");
-        assertNotNull(saved);
+
+        assertEquals(newEmail, saved.getEmail());
+        assertNotNull(saved.getNo());
+    }
+
+    @Test
+    void signup_should_encrypt_password() {
+        User saved = userMapper.findByEmail(email);
+
+        assertNotEquals("Abcd1234!", saved.getPassword());
+        assertTrue(passwordEncoder.matches("Abcd1234!", saved.getPassword()));
     }
 
     @Test
@@ -92,9 +104,9 @@ class UserServiceTest {
             "Newpass123!"
         );
 
-        // 🔥 진짜 검증 (핵심)
         User updated = userService.login(email, "Newpass123!");
-        assertNotNull(updated);
+        
+        assertEquals(email, updated.getEmail());
     }
 
     @Test
@@ -111,12 +123,40 @@ class UserServiceTest {
     }
 
     @Test
-    void login_fail_lock_account() {
+    void change_password_fail_wrong_current_password() {
         User user = userService.login(email, "Abcd1234!");
 
-        for (int i = 0; i < 3; i++) {
-            userMapper.increaseFailCount(user.getNo());
-        }
+        assertThrows(RuntimeException.class, () -> {
+            userService.changePassword(
+                user.getNo(), 
+                "wrong", 
+                "Newpass123!"
+            );
+        });
+    }
+
+    @Test
+    void locked_user_cannot_login() {
+        User user = userService.login(email, "Abcd1234!");
+
+        userMapper.increaseFailCount(user.getNo());
+        userMapper.increaseFailCount(user.getNo());
+        userMapper.increaseFailCount(user.getNo());
+
+        assertThrows(RuntimeException.class, () -> {
+            userService.login(email, "Abcd1234!");
+        });
+    }
+
+    @Test
+    void old_password_should_not_work_after_change() {
+        User user = userService.login(email, "Abcd1234!");
+
+        userService.changePassword(
+            user.getNo(), 
+            "Abcd1234!", 
+            "Newpass123!"
+        );
 
         assertThrows(RuntimeException.class, () -> {
             userService.login(email, "Abcd1234!");
