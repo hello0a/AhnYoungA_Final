@@ -137,7 +137,6 @@ public class UserServiceImpl implements UserService {
         }
 
         policyService.validate(newPassword);
-        emailService.deleteVerification(email);
 
         List<String> history = passwordHistoryMapper.findByUser(user.getNo());
         for (String oldPassword : history) {
@@ -150,6 +149,7 @@ public class UserServiceImpl implements UserService {
         int result = userMapper.updatePassword(user.getNo(), encoded);
 
         passwordHistoryMapper.insert(user.getNo(), encoded);
+        emailService.deleteVerification(email);
 
         return result;
     }

@@ -36,15 +36,8 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         try {
             if (authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
                 Long userNo = userDetails.getUser().getNo();
-                log.info("[LoginSuccess] 인증된 사용자 no={}, email={}", userNo, userDetails.getUser().getEmail());
-
-                log.debug("[LoginSuccess] resetFailCount 호출 시작");
                 userMapper.resetFailCount(userNo);
-                log.debug("[LoginSuccess] resetFailCount 완료");
-
-                log.debug("[LoginSuccess] saveHistory 호출 시작");
                 authService.saveHistory(userNo, request, true);
-                log.debug("[LoginSuccess] saveHistory 완료");
 
             } else {
                 log.warn("[LoginSuccess] Principal이 CustomUserDetails 타입이 아님: {}", authentication.getPrincipal());

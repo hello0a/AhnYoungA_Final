@@ -1,4 +1,4 @@
--- Active: 1777040411017@@127.0.0.1@3306@aloha
+-- Active: 1770210803187@@127.0.0.1@3306@aloha
 DROP TABLE IF EXISTS email_verification,
 persistent_logins,
 password_history,
@@ -33,8 +33,8 @@ CREATE TABLE password_history (
 );
 
 CREATE TABLE persistent_logins (
-    `username` VARCHAR(64) NOT NULL,
     `series` VARCHAR(64) PRIMARY KEY,
+    `username` VARCHAR(64) NOT NULL,
     `token` VARCHAR(64) NOT NULL,
     `last_used` TIMESTAMP NOT NULL
 );
