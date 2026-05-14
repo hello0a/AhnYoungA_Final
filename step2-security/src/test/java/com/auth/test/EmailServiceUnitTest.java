@@ -162,7 +162,7 @@ class EmailServiceUnitTest {
 
         // then
         assertTrue(result);
-        verify(mapper, never()).deleteByEmail("test@test.com");
+        verify(mapper).deleteByEmail("test@test.com");
         verify(mapper, never()).increaseFailCount("test@test.com");
     }
 

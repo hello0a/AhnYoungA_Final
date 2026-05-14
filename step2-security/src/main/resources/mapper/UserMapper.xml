@@ -44,4 +44,9 @@
             locked = false
         WHERE no = #{no}
     </update>
+    <update id="lockUser">
+        UPDATE users2
+        SET locked = true
+        WHERE no = #{no}
+    </update>
 </mapper>

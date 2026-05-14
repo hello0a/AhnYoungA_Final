@@ -21,6 +21,8 @@ public interface UserMapper {
     int increaseFailCount(Long no);
     // 로그인 실패 횟수 리셋
     int resetFailCount(Long no);
+    // 잠금 처리
+    int lockedUser(Long no);
 }
 /**
  * @Mapper 개념/사용 이유

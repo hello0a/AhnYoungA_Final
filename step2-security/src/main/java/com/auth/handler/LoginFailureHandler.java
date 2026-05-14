@@ -57,6 +57,7 @@ public class LoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
         log.warn("[LoginFailure] 실패 횟수: {}", failCount);
         // 3회 이상 잠금
         if (failCount >= 3) {
+            userMapper.lockedUser(user.getNo());
             response.sendRedirect("/login?locked");
             return;
         }

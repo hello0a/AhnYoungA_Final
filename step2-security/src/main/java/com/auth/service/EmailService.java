@@ -92,13 +92,23 @@ public class EmailService {
 
         boolean valid = passwordEncoder.matches(input, verification.getCode());
 
-        if (valid) {
-            // mapper.deleteByEmail(email);
-            return true;
-        } else {
+        // verifyCode() 성공 후 true 반환하고, 삭제는 나중에 resetPasswordByEmail() 끝에서 실행
+        // -> 같은 코드가 짧은 시간 재사용 될 여지 있음
+        // if (valid) {
+        //     // mapper.deleteByEmail(email);
+        //     return true;
+        // } else {
+        //     mapper.increaseFailCount(email);
+        //     throw new RuntimeException("인증코드가 올바르지 않습니다.");
+        // }
+
+        if (!valid) {
             mapper.increaseFailCount(email);
             throw new RuntimeException("인증코드가 올바르지 않습니다.");
         }
+
+        mapper.deleteByEmail(email);
+        return true;
     }
 
     public void deleteVerification(String email) {

@@ -149,7 +149,8 @@ public class UserServiceImpl implements UserService {
         int result = userMapper.updatePassword(user.getNo(), encoded);
 
         passwordHistoryMapper.insert(user.getNo(), encoded);
-        emailService.deleteVerification(email);
+        // EmailService에서 삭제하고 있으므로 제거
+        // emailService.deleteVerification(email);
 
         return result;
     }

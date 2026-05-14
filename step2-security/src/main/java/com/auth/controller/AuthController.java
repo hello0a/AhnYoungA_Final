@@ -129,7 +129,7 @@ public class AuthController {
     @ResponseBody
     public Map<String, Object> verifyCode(@RequestBody Map<String, String> req) {
         try {
-            boolean valid = emailService.verifyCode(req.get("email"), req.get("code"));
+            emailService.verifyCode(req.get("email"), req.get("code"));
             return Map.of("success", true);
         } catch (Exception e) {
             return Map.of("success", false, "message", e.getMessage());
