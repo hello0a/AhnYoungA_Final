@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>로그인</title>
+</head>
+<!-- JSON 요청 / 토큰 저장 -->
+<body>
+    <h2>로그인</h2>
+
+    <div>
+        <input type="email" id="email" placeholder="이메일" required>
+    </div>
+    <div>
+        <input type="password" id="password" placeholder="비밀번호" required>
+    </div>
+    
+    <button onclick="login()" id="loginBtn">로그인</button>
+
+    <p id="msg"></p>
+
+    <a href="/signup">회원가입</a>
+    <a href="/password-reset">비밀번호 찾기</a>
+
+    <script>
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const msg = document.getElementById("msg");
+            const loginBtn = document.getElementById("loginBtn");
+
+            if (!email || !password) {
+                msg.innerText = "이메일과 비밃번호를 입력하세요";
+                msg.style.color = "red";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "로그인 중...";
+
+            fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            })
+                .then(res => {
+                    if(!res.ok) {
+                        throw new Error("로그인 실패");
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    sessionStorage.setItem("accessToken", data.accessToken);
+                    localStorage.setItem("refreshToken", data.refreshToken);
+
+                    msg.innerText = "로그인 성공";
+                    msg.style.color = "green";
+
+                    location.href = "/mypage";
+                })
+                .catch(() => {
+                    msg.innerText = "아이디 또는 비밀번호가 올바르지 않습니다.";
+                    msg.style.color = "red";
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerText = "로그인";
+                })
+        }
+    </script>
+</body>
+</html>

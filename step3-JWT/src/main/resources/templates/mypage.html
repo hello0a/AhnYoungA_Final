@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>마이페이지</title>
+</head>
+
+<body>
+    <h2>마이페이지</h2>
+    <!-- 회원 정보 -->
+    <div>
+        <p>이메일: <span th:text="${user.email}"></span></p>
+        <p>이름: <span th:text="${user.name}"></span></p>
+    </div>
+
+    <hr>
+
+    <!-- 비밀번호 변경 -->
+    <h3>비밀번호 변경</h3>
+    <div>
+        <input type="password" id="password" placeholder="현재 비밀번호" />
+    </div>
+    <div>
+        <input type="password" id="newPassword" placeholder="새 비밀번호" />
+    </div>
+    <button onclick="changePassword()" id="btn">비밀번호 변경</button>
+    <p id="msg"></p>
+
+    <hr>
+
+    <h3>로그인 이력</h3>
+    <button onclick="loadLoginHistory()">로그인 이력 조회</button>
+    <ul id="history"></ul>
+
+    <hr>
+
+    <button onclick="logout()">로그아웃</button>
+
+    <script>
+        const accessToken = sessionStorage.getItem("accessToken");
+
+        if (!accessToken) {
+            location.href = "/login";
+        }
+
+        loadMe();
+
+        function authHeaders() {
+            return {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + sessionStorage.getItem("accessToken")
+            };
+        }
+
+        function loadMe() {
+            fetch("/api/auth/me", {
+                method: "GET",
+                headers: authHeaders()
+            })
+                .then(res => {
+                    if (res.status === 401 || res.status === 403) {
+                        location.href = "/login";
+                        return;
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    document.getElementById("email").innerText = data.email;
+                    document.getElementById("name").innerText = data.name;
+                })
+        }
+        function changePassword() {
+            const password = document.getElementById("password").value;
+            const newPassword = document.getElementById("newPassword").value;
+
+            const btn = document.getElementById("btn");
+            const msg = document.getElementById("msg");
+            let success = false;
+
+            // 빈값 유효성 검사
+            if (!password || !newPassword) {
+                msg.innerText = "모든 값을 입력하세요";
+                msg.style.color = "red";
+                return;
+            }
+            // 동일 비밀번호 유효성 검사
+            if (password === newPassword) {
+                msg.innerText = "기존 비밀번호와 동일합니다";
+                msg.style.color = "red";
+                return;
+            }
+            // 짧은 비밀번호 유효성 검사
+            if (newPassword.length < 8) {
+                msg.innerText = "비밀번호는 8자 이상";
+                msg.style.color = "red";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "처리 중...";
+
+            fetch("/api/password", {
+                method: "POST",
+                headers: authHeaders(),
+                body: JSON.stringify({
+                    password: password,
+                    newPassword: newPassword
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        success = true;
+
+                        msg.innerText = "비밀번호 변경 성공";
+                        msg.style.color = "green";
+
+                        document.getElementById("password").value = "";
+                        document.getElementById("newPassword").value = "";
+
+                        btn.innerText = "변경 완료";
+                    } else {
+                        msg.innerText = data.message || "실패";
+                        msg.style.color = "red";
+                    }
+                })
+                .catch(() => {
+                    msg.innerText = "요청 실패";
+                    msg.style.color = "red";
+                })
+                .finally(() => {
+                    btn.disabled = false;
+
+                    if (!success) {
+                        btn.innerText = "비밀번호 변경";
+                    }
+                });
+        }
+
+        function loadLoginHistory() {
+            fetch("/api/auth/login-history", {
+                method: "GET",
+                headers: authHeaders()
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const history = document.getElementById("history");
+                    history.innerHTML = "";
+
+                    data.forEach(item => {
+                        const li = document.createElement("li");
+                        li.innerText =
+                            `IP: ${item.ipAddress}, 성공여부: ${item.success}, Agent: ${item.userAgent}`;
+                        history.appendChild(li);
+                    });
+                });
+        }
+
+        function logout() {
+            const refreshToken = localStorage.getItem("refreshToken");
+
+            fetch("/api/auth/logout", {
+                method: "POST",
+                headers: authHeaders(),
+                body: JSON.stringify({
+                    refreshToken: refreshToken
+                })
+            })
+                .finally(() => {
+                    sessionStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken");
+                    location.href = "/login";
+                })
+        }
+    </script>
+
+</body>
+
+</html>
