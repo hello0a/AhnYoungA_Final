@@ -161,7 +161,9 @@ class EmailServiceUnitTest {
 
         // then
         assertTrue(result);
-        verify(mapper).deleteByEmail("test@test.com");
+
+        // Step3: verify 단계에서 삭제X
+        verify(mapper, never()).deleteByEmail("test@test.com");
         verify(mapper, never()).increaseFailCount("test@test.com");
     }
 
