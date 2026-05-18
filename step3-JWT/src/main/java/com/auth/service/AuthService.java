@@ -17,6 +17,6 @@ public interface AuthService {
     AuthResponse login(LoginRequest request, HttpServletRequest httpRequest);
     AuthResponse refresh(String refreshToken);
     // 로그아웃
-    void logout(String refreshToken);
+    void logout(String refreshToken, Long userNo);
     List<LoginHistory> getLoginHistory(Long userNo);
 }

@@ -30,13 +30,13 @@
             const loginBtn = document.getElementById("loginBtn");
 
             if (!email || !password) {
-                msg.innerText = "이메일과 비밃번호를 입력하세요";
+                msg.innerText = "이메일과 비밀번호를 입력하세요";
                 msg.style.color = "red";
                 return;
             }
 
-            btn.disabled = true;
-            btn.innerText = "로그인 중...";
+            loginBtn.disabled = true;
+            loginBtn.innerText = "로그인 중...";
 
             fetch("/api/auth/login", {
                 method: "POST",
@@ -68,8 +68,8 @@
                     msg.style.color = "red";
                 })
                 .finally(() => {
-                    btn.disabled = false;
-                    btn.innerText = "로그인";
+                    loginBtn.disabled = false;
+                    loginBtn.innerText = "로그인";
                 })
         }
     </script>

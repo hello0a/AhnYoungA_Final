@@ -106,8 +106,7 @@ public class EmailService {
             mapper.increaseFailCount(email);
             throw new RuntimeException("인증코드가 올바르지 않습니다.");
         }
-
-        mapper.deleteByEmail(email);
+        
         return true;
     }
 

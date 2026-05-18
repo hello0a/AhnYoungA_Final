@@ -3,12 +3,10 @@ package com.auth.controller;
 import java.util.Map;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
 import com.auth.domain.User;
-import com.auth.security.CustomUserDetails;
 import com.auth.service.EmailService;
 import com.auth.service.UserService;
 
@@ -59,19 +57,7 @@ public class AuthController {
 
     // 회원정보 조회 페이지 - 비밀번호 변경(부분 렌더링)
     @GetMapping("/mypage")
-    public String mypage(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            Model model) {
-        log.info("[Mypage] 컨트롤러 진입, userDetails={}", userDetails);
-
-        if (userDetails == null) {
-            log.warn("[Mypage] userDetails null → redirect:/login");
-            return "redirect:/login";
-        }
-
-        log.info("[Mypage] 인증된 사용자 no={}, email={}", userDetails.getUser().getNo(), userDetails.getUser().getEmail());
-        model.addAttribute("user", userDetails.getUser());
-
+    public String mypage() {
         return "mypage";
     }
 

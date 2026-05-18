@@ -46,8 +46,12 @@ public class ApiAuthController {
     }
     
     @PostMapping("/api/auth/logout")
-    public Map<String, Object> logout(@RequestBody LogoutRequest request) {
-        authService.logout(request.getRefreshToken());
+    public Map<String, Object> logout(
+        @RequestBody LogoutRequest request,
+        Authentication authentication
+    ) {
+        Long userNo = (Long) authentication.getPrincipal();
+        authService.logout(request.getRefreshToken(), userNo);
         return Map.of("success", true);
     }
     

@@ -26,22 +26,29 @@ public class SecurityConfig {
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
                         .csrf(AbstractHttpConfigurer::disable)
+
+                        // formLogin, remember-me, 세션 인증 내려가고(?)
+                        // JWT Filter와 Stateless 구조로 전환
                         .sessionManagement(session -> session
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         )
                         .formLogin(AbstractHttpConfigurer::disable)
                         .httpBasic(AbstractHttpConfigurer::disable)
                         .logout(AbstractHttpConfigurer::disable)
+
                         .authorizeHttpRequests(auth -> auth
+                                // 화면
                                 .requestMatchers(
                                         "/login",
                                         "/signup",
                                         "/password-reset",
+                                        "/mypage",
                                         "/email/**",
                                         "/api/auth/login",
                                         "/api/auth/refresh",
                                         "/api/password/reset"
                                 ).permitAll()
+                                // 데이터 API
                                 .requestMatchers(
                                         "/api/auth/logout",
                                         "/api/auth/me",

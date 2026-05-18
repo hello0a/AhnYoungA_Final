@@ -5,7 +5,7 @@
     <!-- 로그인 기록 -->
     <insert id="insert">
         INSERT INTO login_history (
-            user_no, ip_address, user_agent, success 
+            user_no, ip_address, user_agent, success
         )
         VALUES (
             #{userNo}, #{ip}, #{agent}, #{success}
@@ -18,7 +18,8 @@
             user_no,
             ip_address,
             user_agent,
-            success
+            success,
+            created_at
         FROM login_history
         WHERE user_no = #{userNo}
         ORDER BY no DESC

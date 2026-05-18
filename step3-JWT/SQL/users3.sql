@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS email_verification,
 persistent_logins,
 password_history,
 login_history,
+refresh_tokens,
 users3;
 
 CREATE TABLE users3 (
@@ -21,6 +22,7 @@ CREATE TABLE login_history (
     `user_agent` VARCHAR(500),
     `login_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `success` BOOLEAN NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_no) REFERENCES users3 (no) ON DELETE SET NULL
 );
 

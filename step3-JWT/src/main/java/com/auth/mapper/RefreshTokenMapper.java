@@ -10,6 +10,6 @@ public interface RefreshTokenMapper {
     
     int insert(RefreshToken refreshToken);
     RefreshToken findByTokenHash(@Param("tokenHash") String tokenHash);
-    int revokedByTokenHash(@Param("tokenHash") String tokenHash);
-    int revokedAllByUserNo(@Param("userNo") Long userNo);
+    int revokeByTokenHash(@Param("tokenHash") String tokenHash);
+    int revokeAllByUserNo(@Param("userNo") Long userNo);
 }

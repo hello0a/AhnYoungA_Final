@@ -13,8 +13,9 @@ public class PasswordConfig {
     }
 }
 /**
- * @Configuration 개념/사용 이유
- * @Bean 개념/사용 이유
- * PasswordEncoder 개념/사용 이유
- * BCryptPasswordEncoder 개념/사용 이유
+ * 로그인 시 비밀번호 비교
+ * 회원가입 시 비밀번호 암호화
+ * 비밀번호 변경/재설정
+ * 
+ * 계속 사용!
  */

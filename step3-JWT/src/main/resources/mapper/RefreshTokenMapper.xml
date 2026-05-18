@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.auth.mapper.RefreshTokenMapper">
-    <insert id="insert" userGeneratedKeys="true" keyProperty="no" keyColumn="no">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="no" keyColumn="no">
         INSERT INTO refresh_tokens (
             user_no,
             token_hash,
@@ -23,9 +23,9 @@
     <select id="findByTokenHash" resultType="RefreshToken">
         SELECT
             no,
-            user_no
-            token_hash
-            device_info
+            user_no,
+            token_hash,
+            device_info,
             ip_address,
             expiry_date,
             revoked,

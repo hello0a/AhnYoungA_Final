@@ -5,6 +5,11 @@ import java.security.MessageDigest;
 
 public class TokenHashUtil {
     public static String sha256(String token) {
+
+        if (token == null || token.isBlank()) {
+            throw new RuntimeException("토큰이 없습니다.");
+        }
+        
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] encoded = digest.digest(token.getBytes(StandardCharsets.UTF_8));

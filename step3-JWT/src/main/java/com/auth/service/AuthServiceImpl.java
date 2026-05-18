@@ -21,7 +21,6 @@ import com.auth.util.TokenHashUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
-// 클래스 정의/구현 이유
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -85,6 +84,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponse refresh(String refreshToken) {
         
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -129,7 +129,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void logout(String refreshToken) {
+    public void logout(String refreshToken, Long userNo) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new RuntimeException("Refresh Token이 없습니다.");
         }
@@ -140,8 +140,11 @@ public class AuthServiceImpl implements AuthService {
         if (savedToken == null) {
             throw new RuntimeException("Refresh Token이 존재하지 않습니다.");
         }
+        if (!savedToken.getUserNo().equals(userNo)) {
+            throw new RuntimeException("본인의 Refresh Token만 로그아웃할 수 있습니다.");
+        }
 
-        refreshTokenMapper.revokedByTokenHash(tokenHash);
+        refreshTokenMapper.revokeByTokenHash(tokenHash);
     }
 
     @Override
@@ -155,7 +158,7 @@ public class AuthServiceImpl implements AuthService {
         token.setTokenHash(TokenHashUtil.sha256(refreshToken));
         token.setDeviceInfo(request.getHeader("User-Agent"));
         token.setIpAddress(request.getRemoteAddr());
-        token.setExpiryDate(LocalDateTime.now().plusSeconds(jwtProvider.getRefreshTokenValidityMs()));
+        token.setExpiryDate(LocalDateTime.now().plusSeconds(jwtProvider.getRefreshTokenValidityMs() / 1000));
         token.setRevoked(false);
 
         refreshTokenMapper.insert(token);

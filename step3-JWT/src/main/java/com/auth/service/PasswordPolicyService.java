@@ -7,6 +7,9 @@ public class PasswordPolicyService {
     
     public void validate(String password) {
 
+        if (password == null || password.isBlank()) {
+            throw new RuntimeException("비밀번호를 입력하세요");
+        }
         if (password.length() < 8) {
             throw new RuntimeException("비밀번호는 8자 이상");
         }
