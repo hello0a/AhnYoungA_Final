@@ -20,7 +20,9 @@ import com.auth.util.TokenHashUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -48,24 +50,35 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         
+        log.info("***Auth Login 로그인 요청: email={}, ip={}",
+            request.getEmail(),
+            httpRequest.getRemoteAddr()
+        );
+
         User user = userMapper.findByEmail(request.getEmail());
 
         if (user == null) {
+            log.warn("***Auth login 실패: 존재하지 않는 이메일, email={}",
+                request.getEmail()
+            );
             saveHistory(null, httpRequest, false);
             throw new RuntimeException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         if (user.isLocked() || user.getLoginFailCount() >= 3) {
+            log.warn("***Auth Login 실패: 잠금 계정, userNo={}", user.getNo());
             saveHistory(user.getNo(), httpRequest, false);
             throw new RuntimeException("계정이 잠겼습니다. 관리자에게 문의하세요.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            log.warn("***Auth Login 실패: 비밀번호 불일치, userNo={}", user.getNo());
             userMapper.increaseFailCount(user.getNo());
 
             User updatedUser = userMapper.findByEmail(request.getEmail());
             if (updatedUser.getLoginFailCount() >= 3) {
                 userMapper.lockedUser(user.getNo());
+                log.warn("***Auth Login 계정 잠금 처리: userNo={}", user.getNo());
             }
 
             saveHistory(user.getNo(), httpRequest, false);
@@ -79,6 +92,8 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = jwtProvider.createRefreshToken(user.getNo());
 
         saveRefreshToken(user.getNo(), refreshToken, httpRequest);
+
+        log.info("***Auth Login 성공: userNo={}", user.getNo());
         
         return new AuthResponse(accessToken, refreshToken);
     }
@@ -86,16 +101,21 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse refresh(String refreshToken) {
+
+        log.info("***Auth Refresh 재발급 요청");
         
         if (refreshToken == null || refreshToken.isBlank()) {
+            log.warn("***Auth Refresh 실패: Refresh Token 없음");
             throw new RuntimeException("Refresh Token이 없습니다.");
         }
 
         if (!jwtProvider.validateToken(refreshToken)) {
+            log.warn("***Auth Refresh 실패: Refresh Token 검증 실패");
             throw new RuntimeException("Refresh Token이 유효하지 않습니다.");
         }
 
         if (!"REFRESH".equals(jwtProvider.getTokenType(refreshToken))) {
+            log.warn("***Auth Refresh 실패: 토큰 타입 불일치");
             throw new RuntimeException("Refresh Token 형식이 아닙니다.");
         }
 
@@ -103,24 +123,33 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken savedToken = refreshTokenMapper.findByTokenHash(tokenHash);
 
         if (savedToken == null) {
+            log.warn("***Auth Refresh 실패: DB에 토큰 없음");
             throw new RuntimeException("Refresh Token이 존재하지 않습니다.");
         }
 
         if (savedToken.isRevoked()) {
+            log.warn("***Auth Refresh 실패: 폐기된 토큰, userNo={}", savedToken.getUserNo());
             throw new RuntimeException("폐기된 Refresh Token입니다.");
         }
 
         if (savedToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            log.warn("***Auth Refresh 실패: 만료된 토큰, userNo={}", savedToken.getUserNo());
             throw new RuntimeException("Refresh Token이 만료되었습니다.");
         }
 
         Long userNo = jwtProvider.getUserNo(refreshToken);
 
         if (!savedToken.getUserNo().equals(userNo)) {
+            log.warn("***Auth Refresh 실패: 사용자 불일치, tokenUserNo={}, dbUserNo={}",
+                userNo,
+                savedToken.getUserNo()
+            );
             throw new RuntimeException("Refresh Token 사용자 정보가 일치하지 않습니다.");
         }
 
         String newAccessToken = jwtProvider.createAccessToken(userNo);
+
+        log.info("***Auth Refresh 성공: userNo={}", userNo);
 
         // Step3 기본 정책: Refresh Token 그대로 유지
         return new AuthResponse(newAccessToken, refreshToken);
@@ -130,6 +159,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void logout(String refreshToken, Long userNo) {
+
+        log.info("***Auth Logout 로그아웃 요청: userNo={}", userNo);
+
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new RuntimeException("Refresh Token이 없습니다.");
         }
@@ -138,13 +170,20 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken savedToken = refreshTokenMapper.findByTokenHash(tokenHash);
 
         if (savedToken == null) {
+            log.warn("***Auth Logout 실패: DB에 토큰 없음, userNo={}", userNo);
             throw new RuntimeException("Refresh Token이 존재하지 않습니다.");
         }
         if (!savedToken.getUserNo().equals(userNo)) {
+            log.warn("***Auth Logout 실패: 본인 토큰 아님, requestUserNo={}, tokenUserNo={}",
+                userNo,
+                savedToken.getUserNo()
+            );
             throw new RuntimeException("본인의 Refresh Token만 로그아웃할 수 있습니다.");
         }
 
         refreshTokenMapper.revokeByTokenHash(tokenHash);
+
+        log.info("***Auth Logout 성공: userNo={}", userNo);
     }
 
     @Override

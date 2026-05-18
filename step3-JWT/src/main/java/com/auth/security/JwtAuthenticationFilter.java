@@ -17,7 +17,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -32,9 +34,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String uri = request.getRequestURI();
         String header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")) {
+            log.debug("***JWT Filter: Authorization Header 없음, uri={}", uri);
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,12 +46,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = header.substring(7);
 
         if (!jwtProvider.validateToken(token)) {
+            log.warn("***JWT Filter: Access Token 검증 실패, uri={}", uri);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         String type = jwtProvider.getTokenType(token);
         if (!"ACCESS".equals(type)) {
+            log.warn("***JWT Filter: 토큰 타입 불일치, uri={}, type={}", uri, type);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
@@ -72,5 +78,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
+
+        log.debug("***JWT Filter: 인증 성공, userNo={}, uri={}",
+            userNo,
+            uri
+        );
     }
 }

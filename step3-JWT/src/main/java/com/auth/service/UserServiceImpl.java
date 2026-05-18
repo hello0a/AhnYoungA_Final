@@ -13,7 +13,9 @@ import com.auth.mapper.PasswordHistoryMapper;
 import com.auth.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -33,6 +35,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public int signup(User user) {
 
+        log.info("***User Signup 회원가입 요청: email={}", user.getEmail());
+
         // 유효성 검사
         validateEmail(user.getEmail());
         policyService.validate(user.getPassword());
@@ -40,6 +44,7 @@ public class UserServiceImpl implements UserService {
         // 회원 존재 여부
         User existing = userMapper.findByEmail(user.getEmail());
         if (existing != null) {
+            log.warn("***User Signup 실패: 이미 존재하는 이메일, email={}", user.getEmail());
             throw new RuntimeException("이미 존재하는 이메일");
         }
         // UUID 부여
@@ -49,16 +54,20 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encoded);
         // 회원 정보 저장
         int result = userMapper.insertUser(user);
+
         Long userNo = user.getNo();
         if (userNo == null) {
             User inserted = userMapper.findByEmail(user.getEmail());
             if (inserted == null || inserted.getNo() == null) {
+                log.error("***User Signup 실패: 회원 등록 후 userNo 조회 실패, email={}", user.getEmail());
                 throw new RuntimeException("회원 등록 실패");
             }
             userNo = inserted.getNo();
         }
 
         passwordHistoryMapper.insert(userNo, encoded);
+
+        log.info("***User Signup 성공: userNo={}, email={}", userNo, user.getEmail());
 
         return result;
     }
@@ -94,10 +103,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public int changePassword(Long userNo, String password, String newPassword) {
 
+        log.info("***Password Change 요청: userNo={}", userNo);
         List<String> history = passwordHistoryMapper.findByUser(userNo);
 
         for (String oldPassword : history) {
             if (passwordEncoder.matches(newPassword, oldPassword)) {
+                log.warn("***Password Change 실패: 이전 비밀번호 재사용, userNo={}", userNo);
                 throw new RuntimeException("이전 비밀번호 사용 불가");
             }
         }
@@ -105,11 +116,13 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.findByNo(userNo);
 
         if (user == null) {
+            log.warn("***Password Change 실패: 사용자 없음, userNo={}", userNo);
             throw new RuntimeException("사용자 없음");
         }
 
         // 기존 비밀번호 확인
         if (!passwordEncoder.matches(password, user.getPassword())) {
+            log.warn("***Password Change 실패: 현재 비밀번호 불일치, userNo={}", userNo);
             throw new RuntimeException("아이디 또는 비밀번호 오류");
         }
         // 새로운 비밀번호 정책 검증
@@ -121,18 +134,26 @@ public class UserServiceImpl implements UserService {
         // 비밀번호 기록
         passwordHistoryMapper.insert(userNo, encoded);
 
+        log.info("***Password Change 성공: userNo={}", userNo);
+
         return result;
     }
 
     @Override
     @Transactional
     public int resetPasswordByEmail(String email, String code, String newPassword) {
+
+        log.info("***Password Reset 요청: email={}", email);
+
         User user = userMapper.findByEmail(email);
+
         if (user == null) {
+            log.warn("***Password Reset 실패: 사용자 없음, email={}", email);
             throw new RuntimeException("사용자 없음");
         }
 
         if (!emailService.verifyCode(email, code)) {
+            log.warn("***Password Reset 실패: 인증코드 오류 또는 만료, email={}", email);
             throw new RuntimeException("인증코드 오류 또는 만료");
         }
 
@@ -141,6 +162,7 @@ public class UserServiceImpl implements UserService {
         List<String> history = passwordHistoryMapper.findByUser(user.getNo());
         for (String oldPassword : history) {
             if (passwordEncoder.matches(newPassword, oldPassword)) {
+                log.warn("***Password Reset 실패: 이전 비밀번호 재사용, userNo={}", user.getNo());
                 throw new RuntimeException("이전 비밀번호 사용 불가");
             }
         }
@@ -150,6 +172,8 @@ public class UserServiceImpl implements UserService {
 
         passwordHistoryMapper.insert(user.getNo(), encoded);
         emailService.deleteVerification(email);
+
+        log.info("***Password Reset 성공: userNo={}, email={}", user.getNo(), email);
 
         return result;
     }
