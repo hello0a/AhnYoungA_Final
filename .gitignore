@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 ### 이메일 인증코드 ###
 .env
+
+## secret
+**/application-secret.properties

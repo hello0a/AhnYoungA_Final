@@ -17,6 +17,16 @@
             "projectName": "step2-security",
             "args": "",
             "envFile": "${workspaceFolder}/step2-security/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-Step3JWTApplication<step3-JWT>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.auth.Step3JWTApplication",
+            "projectName": "step3-JWT",
+            "args": "",
+            "envFile": "${workspaceFolder}/step3-JWT/.env"
         }
     ]
 }
