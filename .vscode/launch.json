@@ -24,9 +24,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "mainClass": "com.auth.Step3JWTApplication",
-            "projectName": "step3-JWT",
-            "args": "",
-            "envFile": "${workspaceFolder}/step3-JWT/.env"
+            "projectName": "step3-JWT"
         }
     ]
 }

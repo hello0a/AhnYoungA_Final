@@ -26,6 +26,12 @@ public class AuthController {
     private final UserService userService;
     private final EmailService emailService;
 
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/login";
+    }
+    
+
     // 회원가입 페이지
     @GetMapping("/signup")
     public String signupPage() {

@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .authorizeHttpRequests(auth -> auth
                                 // 화면
                                 .requestMatchers(
+                                        "/",
                                         "/login",
                                         "/signup",
                                         "/password-reset",

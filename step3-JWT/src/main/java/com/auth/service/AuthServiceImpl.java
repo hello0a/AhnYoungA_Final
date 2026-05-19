@@ -76,6 +76,13 @@ public class AuthServiceImpl implements AuthService {
             userMapper.increaseFailCount(user.getNo());
 
             User updatedUser = userMapper.findByEmail(request.getEmail());
+
+            // login_fail_count 안됌
+            log.warn("***Auth Login 실패 횟수 확인: userNo={}, failCount={}",
+                updatedUser.getNo(),
+                updatedUser.getLoginFailCount()
+            );
+
             if (updatedUser.getLoginFailCount() >= 3) {
                 userMapper.lockedUser(user.getNo());
                 log.warn("***Auth Login 계정 잠금 처리: userNo={}", user.getNo());
