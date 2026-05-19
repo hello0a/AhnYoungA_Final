@@ -33,6 +33,8 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    // 실패 처리 트랜잭션
+    private final AuthFailureService authFailureService;
 
     @Override
     public void saveHistory(Long userNo, HttpServletRequest request, boolean success) {
@@ -61,34 +63,30 @@ public class AuthServiceImpl implements AuthService {
             log.warn("***Auth login 실패: 존재하지 않는 이메일, email={}",
                 request.getEmail()
             );
-            saveHistory(null, httpRequest, false);
+            authFailureService.recordFailure(null, request.getEmail(), httpRequest);
             throw new RuntimeException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         if (user.isLocked() || user.getLoginFailCount() >= 3) {
             log.warn("***Auth Login 실패: 잠금 계정, userNo={}", user.getNo());
-            saveHistory(user.getNo(), httpRequest, false);
-            throw new RuntimeException("계정이 잠겼습니다. 관리자에게 문의하세요.");
+            authFailureService.recordLockedFailure(user.getNo(), httpRequest);
+
+            throw new RuntimeException("로그인 실패 횟수가 초과되어 계정이 잠겼습니다.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             log.warn("***Auth Login 실패: 비밀번호 불일치, userNo={}", user.getNo());
-            userMapper.increaseFailCount(user.getNo());
-
-            User updatedUser = userMapper.findByEmail(request.getEmail());
+            
+            int failCount = authFailureService.recordFailure(
+                user.getNo(), request.getEmail(), httpRequest
+            );
 
             // login_fail_count 안됌
             log.warn("***Auth Login 실패 횟수 확인: userNo={}, failCount={}",
-                updatedUser.getNo(),
-                updatedUser.getLoginFailCount()
+                user.getNo(),
+                failCount
             );
 
-            if (updatedUser.getLoginFailCount() >= 3) {
-                userMapper.lockedUser(user.getNo());
-                log.warn("***Auth Login 계정 잠금 처리: userNo={}", user.getNo());
-            }
-
-            saveHistory(user.getNo(), httpRequest, false);
             throw new RuntimeException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 

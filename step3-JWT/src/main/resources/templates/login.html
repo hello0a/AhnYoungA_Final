@@ -48,11 +48,14 @@
                     password: password
                 })
             })
-                .then(res => {
+                .then(async res => {
+                    const data = await res.json();
+
                     if(!res.ok) {
-                        throw new Error("로그인 실패");
+                        throw new Error(data.message || "로그인 실패");
                     }
-                    return res.json();
+
+                    return data;
                 })
                 .then(data => {
                     sessionStorage.setItem("accessToken", data.accessToken);
@@ -63,8 +66,8 @@
 
                     location.href = "/mypage";
                 })
-                .catch(() => {
-                    msg.innerText = "아이디 또는 비밀번호가 올바르지 않습니다.";
+                .catch(error => {
+                    msg.innerText = error.message || "아이디 또는 비밀번호가 올바르지 않습니다.";
                     msg.style.color = "red";
                 })
                 .finally(() => {
