@@ -181,7 +181,12 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("본인의 Refresh Token만 로그아웃할 수 있습니다.");
         }
 
-        refreshTokenMapper.revokeByTokenHash(tokenHash);
+        int updated = refreshTokenMapper.revokeByTokenHash(tokenHash);
+
+        if (updated != 1) {
+            log.warn("***Auth Logout 실패: Refresh Token 폐기 실패, userNo={}", userNo);
+            throw new RuntimeException("Refresh Token 폐기 실패");
+        }
 
         log.info("***Auth Logout 성공: userNo={}", userNo);
     }

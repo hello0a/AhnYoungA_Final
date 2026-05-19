@@ -77,12 +77,12 @@ class AuthServiceUnitTest {
         user.setLocked(false);
 
         httpRequest = mock(HttpServletRequest.class);
-        when(httpRequest.getRemoteAddr()).thenReturn("127.0.0.1");
-        when(httpRequest.getHeader("User-Agent")).thenReturn("JUnit");
     }
 
     @Test
     void login_succes_issues_tokens_and_saves_refresh_token() {
+        mockRequestInfo();
+
         LoginRequest request = new LoginRequest();
         request.setEmail("test@test.com");
         request.setPassword("Abcd1234!");
@@ -109,8 +109,10 @@ class AuthServiceUnitTest {
         assertEquals("JUnit", saved.getDeviceInfo());
     }
 
-     @Test
+    @Test
     void login_fail_when_user_not_found() {
+        mockRequestInfo();
+
         LoginRequest request = new LoginRequest();
         request.setEmail("none@test.com");
         request.setPassword("Abcd1234!");
@@ -127,6 +129,8 @@ class AuthServiceUnitTest {
 
     @Test
     void login_fail_wrong_password_increases_fail_count() {
+        mockRequestInfo();
+        
         LoginRequest request = new LoginRequest();
         request.setEmail("test@test.com");
         request.setPassword("wrong");
@@ -218,6 +222,7 @@ class AuthServiceUnitTest {
         saved.setExpiryDate(LocalDateTime.now().plusDays(7));
 
         when(refreshTokenMapper.findByTokenHash(hash)).thenReturn(saved);
+        when(refreshTokenMapper.revokeByTokenHash(hash)).thenReturn(1);
 
         authServiceImpl.logout(refreshToken, 1L);
 
@@ -242,5 +247,10 @@ class AuthServiceUnitTest {
         });
 
         verify(refreshTokenMapper, never()).revokeByTokenHash(hash);
+    }
+
+    private void mockRequestInfo() {
+        when(httpRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(httpRequest.getHeader("User-Agent")).thenReturn("JUnit");
     }
 }

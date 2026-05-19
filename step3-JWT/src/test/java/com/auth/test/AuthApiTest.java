@@ -1,6 +1,7 @@
 package com.auth.test;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 // import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -17,8 +18,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.auth.domain.RefreshToken;
 import com.auth.domain.User;
+import com.auth.mapper.RefreshTokenMapper;
 import com.auth.service.UserService;
+import com.auth.util.TokenHashUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,6 +42,9 @@ class AuthApiTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private RefreshTokenMapper refreshTokenMapper;
 
     private String email;
     private String password;
@@ -118,8 +125,8 @@ class AuthApiTest {
                                   "refreshToken": "%s"
                                 }
                                 """.formatted(tokens.refreshToken)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
 
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -128,7 +135,10 @@ class AuthApiTest {
                                   "refreshToken": "%s"
                                 }
                                 """.formatted(tokens.refreshToken)))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("폐기된 Refresh Token입니다."));
+
     }
 
     @Test
