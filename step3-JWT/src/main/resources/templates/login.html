@@ -17,12 +17,27 @@
     
     <button onclick="login()" id="loginBtn">로그인</button>
 
-    <p id="msg"></p>
+    <div>
+        <p id="msg"></p>
+        <label>
+            <input type="checkbox" id="saveEmail">
+            아이디 저장
+        </label>
+    </div>
 
     <a href="/signup">회원가입</a>
     <a href="/password-reset">비밀번호 찾기</a>
 
     <script>
+        window.onload = function () {
+            const savedEmail = localStorage.getItem("savedEmail");
+
+            if (savedEmail) {
+                document.getElementById("email").value = savedEmail;
+                document.getElementById("saveEmail").checked = true;
+            }
+        };
+
         function login() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
@@ -61,6 +76,12 @@
                     sessionStorage.setItem("accessToken", data.accessToken);
                     localStorage.setItem("refreshToken", data.refreshToken);
 
+                    if (document.getElementById("saveEmail").checked) {
+                        localStorage.setItem("savedEmail", email);
+                    } else {
+                        localStorage.removeItem("savedEmail");
+                    }
+
                     msg.innerText = "로그인 성공";
                     msg.style.color = "green";
 
@@ -74,6 +95,7 @@
                     loginBtn.disabled = false;
                     loginBtn.innerText = "로그인";
                 })
+
         }
     </script>
 </body>

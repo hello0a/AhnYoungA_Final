@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.auth.domain.User;
@@ -17,9 +18,6 @@ import com.auth.exception.LoginFailException;
 import com.auth.mapper.UserMapper;
 import com.auth.service.UserService;
 
-// 클래스 정의
-// 개념/사용 이유
-// @SpringBootTest, @Autowired, @Test
 @SpringBootTest
 @Transactional
 class UserServiceTest {
@@ -28,7 +26,7 @@ class UserServiceTest {
     private UserService userService;
 
     @Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserMapper userMapper;
@@ -142,6 +140,7 @@ class UserServiceTest {
         userMapper.increaseFailCount(user.getNo());
         userMapper.increaseFailCount(user.getNo());
         userMapper.increaseFailCount(user.getNo());
+        userMapper.lockedUser(user.getNo());
 
         assertThrows(RuntimeException.class, () -> {
             userService.login(email, "Abcd1234!");

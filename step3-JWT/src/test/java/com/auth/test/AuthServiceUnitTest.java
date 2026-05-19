@@ -27,6 +27,7 @@ import com.auth.mapper.LoginHistoryMapper;
 import com.auth.mapper.RefreshTokenMapper;
 import com.auth.mapper.UserMapper;
 import com.auth.security.JwtProvider;
+import com.auth.service.AuthFailureService;
 import com.auth.service.AuthServiceImpl;
 import com.auth.util.TokenHashUtil;
 
@@ -49,6 +50,9 @@ class AuthServiceUnitTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private AuthFailureService authFailureService;
+
     private JwtProvider jwtProvider;
 
     private AuthServiceImpl authServiceImpl;
@@ -65,7 +69,12 @@ class AuthServiceUnitTest {
         );
 
         authServiceImpl = new AuthServiceImpl(
-            loginHistoryMapper, userMapper, refreshTokenMapper, passwordEncoder, jwtProvider
+            loginHistoryMapper, 
+            userMapper, 
+            refreshTokenMapper, 
+            passwordEncoder, 
+            jwtProvider,
+            authFailureService
         );
 
         user = new User();
@@ -111,8 +120,6 @@ class AuthServiceUnitTest {
 
     @Test
     void login_fail_when_user_not_found() {
-        mockRequestInfo();
-
         LoginRequest request = new LoginRequest();
         request.setEmail("none@test.com");
         request.setPassword("Abcd1234!");
@@ -123,14 +130,12 @@ class AuthServiceUnitTest {
             authServiceImpl.login(request, httpRequest);
         });
 
-        verify(loginHistoryMapper).insert(null, "127.0.0.1", "JUnit", false);
+        verify(authFailureService).recordFailure(null, "none@test.com", httpRequest);
         verify(refreshTokenMapper, never()).insert(any());
     }
 
     @Test
     void login_fail_wrong_password_increases_fail_count() {
-        mockRequestInfo();
-        
         LoginRequest request = new LoginRequest();
         request.setEmail("test@test.com");
         request.setPassword("wrong");
@@ -141,18 +146,17 @@ class AuthServiceUnitTest {
         updated.setPassword("encoded-password");
         updated.setLoginFailCount(1);
 
-        when(userMapper.findByEmail("test@test.com"))
-                .thenReturn(user)
-                .thenReturn(updated);
-
+        when(userMapper.findByEmail("test@test.com")).thenReturn(user);
         when(passwordEncoder.matches("wrong", "encoded-password")).thenReturn(false);
+        when(authFailureService.recordFailure(1L, "test@test.com", httpRequest))
+            .thenReturn(1);
 
         assertThrows(RuntimeException.class, () -> {
             authServiceImpl.login(request, httpRequest);
         });
 
-        verify(userMapper).increaseFailCount(1L);
-        verify(loginHistoryMapper).insert(1L, "127.0.0.1", "JUnit", false);
+        verify(authFailureService).recordFailure(1L, "test@test.com", httpRequest);
+        verify(refreshTokenMapper, never()).insert(any());
     }
 
     @Test
